@@ -8,7 +8,7 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - "xpack.security.enabled=false"
-      - http_proxy=http://user:pass@10.32.150.40:82/
+      - http_proxy=http://user:pass@ipProxy:port/
     ulimits:
       memlock:
         soft: -1
@@ -16,7 +16,7 @@ services:
     mem_limit: 1g
     volumes:
       - esdata1:/usr/share/elasticsearch/data
-      - "./config/elastic.co/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro"
+      - "./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro"
     ports:
       - 9200:9200
     networks:
@@ -31,7 +31,7 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch1"
       - "xpack.security.enabled=false"
-      - http_proxy=http://user:pass@10.32.150.40:82/
+      - http_proxy=http://user:pass@ipProxy:port/
     ulimits:
       memlock:
         soft: -1
@@ -39,7 +39,7 @@ services:
     mem_limit: 1g
     volumes:
       - esdata2:/usr/share/elasticsearch/data
-      - "./config/elastic.co/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro"
+      - "./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro"
     networks:
       - elk-digital
 
@@ -47,7 +47,7 @@ services:
     image: docker.elastic.co/kibana/kibana:5.6.0
     mem_limit: 1g
     ports: [ "5601:5601" ]
-    volumes: [ "./config/elastic.co/kibana.yml:/usr/share/kibana/config/kibana.yml" ]
+    volumes: [ "./config/kibana.yml:/usr/share/kibana/config/kibana.yml" ]
     environment:
       - "xpack.security.enabled=false"
     networks:
@@ -57,7 +57,7 @@ services:
   filebeat:
     image: docker.elastic.co/beats/filebeat:5.6.0
     mem_limit: 1g
-    volumes: [ "/home/diogomenezes/projetos/log-elk/logs:/var/log", "./config/elastic.co/filebeat.yml:/usr/share/filebeat/filebeat.yml" ]
+    volumes: [ "/home/diogomenezes/projetos/log-elk/logs:/var/log", "./config/filebeat.yml:/usr/share/filebeat/filebeat.yml" ]
     networks:
       - elk-digital
     depends_on: [ elasticsearch ]
@@ -65,7 +65,7 @@ services:
   metricbeat:
     image: docker.elastic.co/beats/metricbeat:5.6.0
     mem_limit: 1g
-    volumes: [ "./data/elastic.co/metricbeat:/tmp", "./config/elastic.co/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml" ]
+    volumes: [ "./data/elastic.co/metricbeat:/tmp", "./config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml" ]
     networks:
       - elk-digital
     depends_on: [ elasticsearch ]
@@ -80,8 +80,8 @@ networks:
   elk-digital:
 
 # Dando pesmissoes
-  # sudo chown 1000 ./config/elastic.co/filebeat.yml
-  # sudo chmod go-w ./config/elastic.co/filebeat.yml
+  # sudo chown 1000 ./config/filebeat.yml
+  # sudo chmod go-w ./config/filebeat.yml
 
 # Isso pode ser ajustado criando uma imagem customizada já com o yml correto, como consta na documentação:
 # https://www.elastic.co/guide/en/beats/filebeat/current/running-on-docker.html
