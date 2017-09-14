@@ -1,0 +1,72 @@
+version: '2.1'
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
+    mem_limit: 1g
+    ports: [ "9200:9200" ]
+    volumes: [ "./data/elastic.co/elasticsearch:/usr/share/elasticsearch/data" , "./config/elastic.co/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro" ]
+    environment:
+      - cluster.name=oidigital-elasticsearch
+      - bootstrap.memory_lock=true
+      - "xpack.security.enabled=false"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:5.4.0
+    mem_limit: 1g
+    volumes: [ "./config/elastic.co/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml" ]
+    depends_on: [ elasticsearch ]
+    links: [ mongo, kibana, postgres, mysql ]
+
+  packetbeat:
+    image: docker.elastic.co/beats/packetbeat:5.4.0
+    mem_limit: 1g
+    volumes: [ "./config/elastic.co/packetbeat.yml:/usr/share/packetbeat/packetbeat.yml:ro" ]
+    cap_add: [ NET_RAW, NET_ADMIN ]
+    command: packetbeat -v -e -E output.elasticsearch.hosts='["elasticsearch:9200"]'
+    depends_on: [ elasticsearch ]
+    network_mode: host
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.4.0
+    mem_limit: 1g
+    ports: [ "5601:5601" ]
+    volumes: [ "./config/elastic.co/kibana.yml:/usr/share/kibana/config/kibana.yml" ]
+    environment:
+      - "xpack.security.enabled=false"
+    depends_on: [ elasticsearch ]
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:5.4.0
+    mem_limit: 1g
+    ports: [ "5000:5000", "9600:9600", "8000:8000" ]
+    command: logstash -f /usr/share/logstash/pipeline/logstash.conf
+    volumes: [ "./config/elastic.co/logstash.conf:/usr/share/logstash/pipeline/logstash.conf", "./logs:/tmp/logs" ]
+    depends_on: [ elasticsearch ]
+
+  mysql:
+    image: mysql:5
+    mem_limit: 1g
+    env_file: [ ./environment ]
+    ports: [ "3306:3306" ]
+    volumes: [ "./data/mysql:/var/lib/mysql" ]
+
+  postgres:
+    image: postgres:alpine
+    mem_limit: 1g
+    env_file: [ ./environment ]
+    ports: [ "5432:5432" ]
+    volumes: [ "./data/postgres:/var/lib/postgresql/data" ]
+
+  mongo:
+    image: mongo:latest
+    mem_limit: 1g
+    env_file: [ ./environment ]
+    ports: [ "27017:27017" ]
+    volumes: [ "./data/mongo:/data/db" ]

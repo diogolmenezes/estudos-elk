@@ -1,0 +1,10 @@
+heartbeat.monitors:
+- type: http
+  schedule: '@every 10s'
+  urls: ["http://tripolist.com"]
+  check.response.status: 200
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+# https://www.elastic.co/guide/en/beats/heartbeat/current/configuration-heartbeat-options.html

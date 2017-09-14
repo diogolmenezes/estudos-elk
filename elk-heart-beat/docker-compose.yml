@@ -1,0 +1,50 @@
+version: '2'
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.0
+    container_name: elasticsearch
+    mem_limit: 1g
+    environment:
+      - "xpack.security.enabled=false"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 9200:9200
+
+  heartbeat:
+    image: docker.elastic.co/beats/heartbeat:5.6.0
+    container_name: heartbeat
+    mem_limit: 1g
+    volumes:
+      - "./config/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml"
+    #environment:
+    #  - http_proxy=http://user:pass@10.32.150.40:82/
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.6.0
+    container_name: kibana
+    mem_limit: 1g
+    environment:
+      - "xpack.security.enabled=false"
+    volumes:
+      - "./config/kibana.yml:/usr/share/kibana/config/kibana.yml"
+    ports:
+      - 5601:5601
+    depends_on: [elasticsearch]
+
+
+
+# Ajustando permissão do arquivo yml.
+
+# $ sudo chown 1000 config/heartbeat.yml
+# $ sudo chmod go-w config/heartbeat.yml
+
+# Isso pode ser ajustado criando uma imagem customizada já com o yml correto, como consta na documentação:
+# https://www.elastic.co/guide/en/beats/heartbeat/current/running-on-docker.html
+
+# It’s possible to embed your Heartbeat configuration in a custom image. Here is an example Dockerfile to achieve this:
+# FROM docker.elastic.co/beats/heartbeat:5.6.0
+# COPY heartbeat.yml /usr/share/heartbeat/heartbeat.yml
+# USER root
+# RUN chown heartbeat /usr/share/heartbeat/heartbeat.yml
+# USER heartbeat

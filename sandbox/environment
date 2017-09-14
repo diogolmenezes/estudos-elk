@@ -1,0 +1,10 @@
+# Postgress
+POSTGRES_PASSWORD=xpressolab
+
+# Java
+JAVA_OPTS=-Dfile.encoding=UTF-8 -server -XX:MaxMetaspaceSize=1g -Xms1g -Xmx1g -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom
+
+# SO
+CONFIG_SERVICE_HOST=http://config:8888/
+REGISTRY_SERVICE_HOSTS=http://registry:8761/eureka
+AMQP_HOST=rabbitmq
